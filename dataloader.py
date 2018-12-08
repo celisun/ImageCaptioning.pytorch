@@ -32,9 +32,9 @@ class DataLoader(data.Dataset):
 
     def read_files(self):
         self.feats_fc = h5py.File(os.path.join(
-            self.opt.input_fc_dir, 'feats_fc.h5'), 'r')
+            self.opt.input_fc_dir, 'data_fc.h5'), 'r')
         self.feats_att = h5py.File(os.path.join(
-            self.opt.input_att_dir, 'feats_att.h5'), 'r')
+            self.opt.input_att_dir, 'data_att.h5'), 'r')
 
     def get_data(self, ix):
         self.read_files()
@@ -268,4 +268,9 @@ class BlobFetcher():
             self.reset()
         assert tmp[2] == ix, "ix not equal"
 
-        return tmp + [wrapped]
+        # print("tmp:")
+        # print(tmp)
+        # print("wrapped:")
+        # print(wrapped)
+        tmp_fc, tmp_att, ix = tmp
+        return tmp_fc, tmp_att, ix, wrapped

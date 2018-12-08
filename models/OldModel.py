@@ -73,7 +73,7 @@ class OldModel(CaptionModel):
                     it.index_copy_(0, sample_ind, torch.multinomial(prob_prev, 1).view(-1).index_select(0, sample_ind))
                     it = Variable(it, requires_grad=False)
             else:
-                it = seq[:, i].clone()          
+                it = seq[:, i].clone()
             # break if all the sequences end
             if i >= 1 and seq[:, i].data.sum() == 0:
                 break
