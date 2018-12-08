@@ -11,7 +11,7 @@ def parse_opt():
                     help='path to the directory containing the preprocessed att feats')
     parser.add_argument('--input_label_h5', type=str, default='data/data.h5',
                     help='path to the h5file containing the preprocessed dataset')
-    parser.add_argument('--start_from', type=str, default=None,
+    parser.add_argument('--start_from', type=str, default='checkpoint_params',
                     help="""continue training from saved model at this path. Path must contain files saved by previous training process: 
                         'infos.pkl'         : configuration;
                         'checkpoint'        : paths to model file(s) (created by tf).
@@ -20,7 +20,7 @@ def parse_opt():
                     """)
 
     # Model settings
-    parser.add_argument('--caption_model', type=str, default="show_tell",
+    parser.add_argument('--caption_model', type=str, default="show_tell",  # try attention?
                     help='show_tell, show_attend_tell, all_img, fc, att2in, att2in2, adaatt, adaattmo, topdown')
     parser.add_argument('--rnn_size', type=int, default=512,
                     help='size of the rnn in number of hidden nodes in each layer')

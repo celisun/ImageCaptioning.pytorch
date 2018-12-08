@@ -99,13 +99,14 @@ def eval_split(model, crit, loader, eval_kwargs={}):
         tmp = [Variable(torch.from_numpy(_), volatile=True) for _ in tmp]
         fc_feats, att_feats = tmp
         # forward the model to also get generated samples for each image
-        seq, _ = model.sample(fc_feats, att_feats, eval_kwargs)
-        
+        seq, logprobs = model.sample(fc_feats, att_feats, eval_kwargs)
         #set_trace()
+        logprobs = logprobs.numpy()
         sents = utils.decode_sequence(loader.get_vocab(), seq)
 
         for k, sent in enumerate(sents):
-            entry = {'image_id': data['infos'][k]['id'], 'caption': sent}
+            # entry = {'image_id': data['infos'][k]['id'], 'caption': sent}
+            entry = {'image_id': data['infos'][k]['id'], 'caption': sent, 'logprob': logprobs}
             if eval_kwargs.get('dump_path', 0) == 1:
                 entry['file_name'] = data['infos'][k]['file_path']
             predictions.append(entry)
@@ -116,7 +117,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
                 os.system(cmd)
 
             if verbose:
-                print('image %s: %s' %(entry['image_id'], entry['caption']))
+                print('image %s: %s.  logprob: %s' %(entry['image_id'], entry['caption'], str(entry['logprob'])))
 
         # if we wrapped around the split or used up val imgs budget then bail
         ix0 = data['bounds']['it_pos_now']
