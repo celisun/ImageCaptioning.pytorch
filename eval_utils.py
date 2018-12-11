@@ -106,7 +106,7 @@ def eval_split(model, crit, loader, eval_kwargs={}):
 
         for k, sent in enumerate(sents):
             # entry = {'image_id': data['infos'][k]['id'], 'caption': sent}
-            entry = {'image_id': data['infos'][k]['id'], 'caption': sent, 'logprob': logprobs}
+            entry = {'image_id': data['infos'][k]['id'], 'caption': sent, 'logprob': str(logprobs)}
             if eval_kwargs.get('dump_path', 0) == 1:
                 entry['file_name'] = data['infos'][k]['file_path']
             predictions.append(entry)

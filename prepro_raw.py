@@ -23,7 +23,7 @@ for i in range(10000):
     jimg['captions'] = sents
     out.append(jimg)
     
-json.dump(out, open('data_raw.json', 'w'))
+json.dump(out, open('train_raw.json', 'w'))
 
 
 # print (out[0])

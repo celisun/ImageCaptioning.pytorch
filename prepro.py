@@ -232,18 +232,18 @@ def main(params):
   print ('wrote ', params['output_json'])
 
 if __name__ == "__main__":
-
+  print ("go")
   parser = argparse.ArgumentParser()
 
   # input json
-  parser.add_argument('--input_json', default=os.path.join("data", "test_raw.json"), help='input json file to process into hdf5')
-  parser.add_argument('--num_val', default=0, type=int, help='number of images to assign to validation data (for CV etc)')
-  parser.add_argument('--output_json', default='test.json', help='output json file')
-  parser.add_argument('--output_h5', default='test.h5', help='output h5 file')
+  parser.add_argument('--input_json', default=os.path.join("", "train_raw.json"), help='input json file to process into hdf5')
+  parser.add_argument('--num_val', default=1000, type=int, help='number of images to assign to validation data (for CV etc)')
+  parser.add_argument('--output_json', default='data27.json', help='output json file')
+  parser.add_argument('--output_h5', default='data27.h5', help='output h5 file')
   
   # options
-  parser.add_argument('--max_length', default=16, type=int, help='max length of a caption, in number of words. captions longer than this get clipped.')
-  parser.add_argument('--images_root', default='data', help='root location in which images are stored, to be prepended to file_path in input json')
+  parser.add_argument('--max_length', default=27, type=int, help='max length of a caption, in number of words. captions longer than this get clipped.')
+  parser.add_argument('--images_root', default='', help='root location in which images are stored, to be prepended to file_path in input json')
   parser.add_argument('--word_count_threshold', default=5, type=int, help='only words that occur more than this number of times will be put in vocab')
   parser.add_argument('--num_test', default=0, type=int, help='number of test images (to withold until very very end)')
 
@@ -251,4 +251,5 @@ if __name__ == "__main__":
   params = vars(args) # convert to ordinary dict
   print ('parsed input parameters:')
   print (json.dumps(params, indent = 2))
+
   main(params)

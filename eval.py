@@ -21,18 +21,18 @@ import torch
 # Input arguments and options
 parser = argparse.ArgumentParser()
 # Input paths
-parser.add_argument('--model', type=str, default='checkpoint_params/model-best.pth',
+parser.add_argument('--model', type=str, default='',
                 help='path to model to evaluate')
 parser.add_argument('--cnn_model', type=str,  default='resnet101',
                 help='resnet101, resnet152')
-parser.add_argument('--infos_path', type=str, default='checkpoint_params/infos_-best.pkl',
+parser.add_argument('--infos_path', type=str, default='',
                 help='path to infos to evaluate')
 # Basic options
 parser.add_argument('--batch_size', type=int, default=0,
                 help='if > 0 then overrule, otherwise load from checkpoint.')
-parser.add_argument('--num_images', type=int, default=20, # from -1
+parser.add_argument('--num_images', type=int, default=-1,
                 help='how many images to use when periodically evaluating the loss? (-1 = all)')
-parser.add_argument('--language_eval', type=int, default=1, #  from 0
+parser.add_argument('--language_eval', type=int, default=0,
                 help='Evaluate language as well (1 = yes, 0 = no)? BLEU/CIDEr/METEOR/ROUGE_L? requires coco-caption code from Github.')
 parser.add_argument('--dump_images', type=int, default=1,
                 help='Dump images into vis/imgs folder for vis? (1=yes,0=no)')
@@ -42,29 +42,29 @@ parser.add_argument('--dump_path', type=int, default=1,
                 help='Write image paths along with predictions into vis json? (1=yes,0=no)')
 
 # Sampling options
-parser.add_argument('--sample_max', type=int, default=1,  # *
+parser.add_argument('--sample_max', type=int, default=1,
                 help='1 = sample argmax words. 0 = sample from distributions.')
-parser.add_argument('--beam_size', type=int, default=2,   # *
+parser.add_argument('--beam_size', type=int, default=2,
                 help='used when sample_max = 1, indicates number of beams in beam search. Usually 2 or 3 works well. More is not better. Set this to 1 for faster runtime but a bit worse performance.')
-parser.add_argument('--temperature', type=float, default=1.0,  # *
+parser.add_argument('--temperature', type=float, default=1.0,
                 help='temperature when sampling from distributions (i.e. when sample_max = 0). Lower = "safer" predictions.')
 # For evaluation on a folder of images:
-parser.add_argument('--image_folder', type=str, default='images_test',
+parser.add_argument('--image_folder', type=str, default='',
                 help='If this is nonempty then will predict on the images in this folder path')
-parser.add_argument('--image_root', type=str, default='', 
+parser.add_argument('--image_root', type=str, default='',
                 help='In case the image paths have to be preprended with a root path to an image folder')
 # For evaluation on MSCOCO images from some split:
-parser.add_argument('--input_fc_dir', type=str, default='',
+parser.add_argument('--input_fc_dir', type=str, default='data_test',
                 help='path to the h5file containing the preprocessed dataset')
-parser.add_argument('--input_att_dir', type=str, default='',
+parser.add_argument('--input_att_dir', type=str, default='data_test',
                 help='path to the h5file containing the preprocessed dataset')
-parser.add_argument('--input_label_h5', type=str, default='test.h5',
+parser.add_argument('--input_label_h5', type=str, default='data_test/test.h5',
                 help='path to the h5file containing the preprocessed dataset')
-parser.add_argument('--input_json', type=str, default='test.json',
+parser.add_argument('--input_json', type=str, default='data_test/test.jason',
                 help='path to the json file containing additional info and vocab. empty = fetch from model checkpoint.')
-parser.add_argument('--split', type=str, default='test', 
+parser.add_argument('--split', type=str, default='train',
                 help='if running on MSCOCO images, which split to use: val|test|train')
-parser.add_argument('--coco_json', type=str, default='', 
+parser.add_argument('--coco_json', type=str, default='',
                 help='if nonempty then use this file in DataLoaderRaw (see docs there). Used only in MSCOCO test evaluation, where we have a specific json file of only test set images.')
 # misc
 parser.add_argument('--id', type=str, default='',
@@ -87,7 +87,8 @@ if opt.batch_size == 0:
     opt.batch_size = infos['opt'].batch_size
 if len(opt.id) == 0:
     opt.id = infos['opt'].id
-ignore = ["id", "batch_size", "beam_size", "start_from", "language_eval"]
+ignore = ["id", "batch_size", "beam_size", "start_from", "language_eval", \
+          "input_json", "input_label_h5", "input_fc_dir", "input_att_dir"]
 for k in vars(infos['opt']).keys():
     if k not in ignore:
         if k in vars(opt):
@@ -102,7 +103,8 @@ model = models.setup(opt)
 model.load_state_dict(torch.load(opt.model, map_location=lambda storage, loc: storage))
 #model.cuda()
 model.eval()
-crit = utils.LanguageModelCriterion()
+# crit = utils.LanguageModelCriterion()
+crit = nn.LanguageModelCriterion()
 
 # Create the Data Loader instance
 if len(opt.image_folder) == 0:
@@ -116,10 +118,12 @@ else:
 # So make sure to use the vocab in infos file.
 loader.ix_to_word = infos['vocab']
 
-
+eval_kwargs = {'split': 'train',
+               'dataset': opt.input_json}
+eval_kwargs.update(vars(opt))
 # Set sample options
-loss, split_predictions, lang_stats = eval_utils.eval_split(model, crit, loader, 
-    vars(opt))
+loss, split_predictions, lang_stats = eval_utils.eval_split(model, crit, loader,
+        eval_kwargs)
 
 print('loss: ', loss)
 if lang_stats:
